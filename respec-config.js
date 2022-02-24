@@ -9,7 +9,7 @@ var respecConfig = {
   ],
 
   group: "webrtc",
-  xref: ["html", "infra", "permissions", "permissions-policy", "dom"],
+  xref: ["html", "infra", "permissions", "permissions-policy", "dom", "mediacapture-streams", "screen-capture"],
   wgPublicList: "public-webrtc",
   github: "https://github.com/w3c/mediacapture-viewport/",
 
