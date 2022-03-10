@@ -201,8 +201,9 @@
                     <a data-cite="SCREEN-CAPTURE#dfn-display-surface">display surface</a>s,
                     and whose value in turn is a dictionary containing a member
                     named <code>max</code>, and that member's value in turn is
-                    less than the constrainable property's [=floor value=], then let
-                    <var>failedConstraint</var> be the name of the
+                    less than the constrainable property's
+                    <a data-cite="SCREEN-CAPTURE#dfn-floor-value">floor value</a>,
+                    then let <var>failedConstraint</var> be the name of the
                     member, let <var>message</var> be either
                     <code>undefined</code> or an informative human-readable
                     message, and return a promise [=reject|rejected=] with a new
@@ -258,7 +259,7 @@
                   <li>
                     <p>[=Request permission to use=]
                     viewport capture, for a {{PermissionDescriptor}} with its
-                    {{PermissionDescriptor/name}} set to [="viewport-capture"=], resulting in
+                    {{PermissionDescriptor/name}} set to <a>"viewport-capture"</a>, resulting in
                     a set of provided media.</p>
                     <p>The provided media MUST include precisely one video track, which
                     MUST be a live-capture of the
@@ -367,7 +368,8 @@
         <h1 id="permissions-intergration">Permissions Integration</h1>
         <p>
           <cite>Viewport Capture</cite> is a [=powerful feature=] which is identified by the
-          [=powerful feature/name=] "viewport-capture", requiring [=express permission=] to be used.
+          [=powerful feature/name=] <code><dfn class="permission">"viewport-capture"</dfn></code>,
+          requiring [=express permission=] to be used.
         </p>
         <p>
           As required for integration with the [[[Permissions]]] specification, this specification defines the following:
@@ -386,8 +388,7 @@
       <section>
         <h1 id=feature-policy-integration>Permissions Policy Integration</h1>
         <p>This specification defines a [=policy-controlled feature=]
-        identified by the string
-        <code><dfn data-dfn-type="permission">"viewport-capture"</dfn></code>.
+        identified by the string <a>"viewport-capture"</a>.
         Its [=default allowlist=] is <code>"self"</code>.
         <div class="note">
           <p>A [=document=]'s
@@ -397,7 +398,7 @@
           the document will be
           [=allowed to use=]
           {{MediaDevices/getViewportMedia}}. This is enforced by the
-          [=prompt the user to choose=] algorithm.
+          [=request permission to use=] algorithm.
           </p>
         </div>
       </section>
