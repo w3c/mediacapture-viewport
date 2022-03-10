@@ -13,8 +13,8 @@
     <section id="abstract">
       <p>
         This document defines how a browser viewport can be used as the source of
-        a media stream using <code>getViewportMedia</code>, an extension to the Media Capture API
-        [[GETUSERMEDIA]].
+        a media stream using <code>getViewportMedia</code>, an extension to the
+        Screen Capture API [[screen-capture]].
       </p>
     </section>
     <section id="sotd">
@@ -22,11 +22,35 @@
         This document is not complete. It is subject to major changes and, while early
         experimentations are encouraged, it is therefore not intended for implementation.
       </p>
+      <p class="note">
+        This document has not yet been adopted by the Working Group.
+      </p>
     </section>
     <section class="informative" id="intro">
       <h2>
         Introduction
       </h2>
+      <p>
+        This document describes an extension to the Screen Capture API [[screen-capture]]
+        that enables the acquisition of the browser viewport (the current tab), in the form
+        of a video track. In some cases, tab audio is also captured in the form of an audio
+        track. This enables use cases such as: recording an ongoing WebRTC [[WEBRTC]] video
+        meeting, or a user in a video meeting sharing their presentation without having to
+        locate it in a picker, by instead clicking a button in their presentation application.
+      </p>
+      <p>
+        This feature is only available to "cross-origin isolated" documents. This prevents
+        applications from using this API to access potentially confidential information from
+        other origins, content that should remain inaccessible due to the protections offered
+        by the user agent sandbox.
+      </p>
+      <p>
+        This feature has security implications, and requires a permission prompt. Sharing
+        the rendered viewport may expose user information such as browsing history
+        (through link purpling), personal details like address or payment info (through
+        user agent or web extension features like form autofill), or personal preferences
+        (like font size).
+      </p>
     </section>
     <section id="conformance">
       <p>
@@ -38,6 +62,363 @@
         specification must implement them in a manner consistent with the ECMAScript Bindings
         defined in the Web IDL specification [[!WEBIDL]], as this specification uses that
         specification and terminology.
+      </p>
+    </section>
+    <section>
+      <h2>
+        Example
+      </h2>
+      <p>
+        The following example demonstrates a request for viewport capture using the
+        <code>navigator.mediaDevices.getViewportMedia</code> method defined in this
+        document.
+      </p>
+      <pre class="example highlight">try {
+  const stream = await navigator.mediaDevices.getViewportMedia();
+  videoElement.srcObject = stream;
+} catch (e) {
+  console.log('Unable to acquire viewport capture: ' + e);
+}</pre>
+    </section>
+    <section>
+      <h2>
+        Terminology
+      </h2>
+      <p>
+        This document uses the definitions of {{MediaStream}}, {{MediaStreamTrack}},
+        {{MediaStreamConstraints}} and {{ConstrainablePattern}}
+        from [[!GETUSERMEDIA]], and the definitions of
+        <a data-cite="SCREEN-CAPTURE#dfn-display-surface">display surface</a>
+        and <a data-cite="SCREEN-CAPTURE#dfn-browser">browser display surface</a>
+        from [[!screen-capture]].
+      </p>
+    </section>
+    <section>
+      <h2>
+        Capturing Viewport Media
+      </h2>
+      <p>
+        Capture of the Viewport is enabled through the addition of a new
+        {{MediaDevices/getViewportMedia}} method on the {{MediaDevices}}
+        interface, that is similar to {{MediaDevices/getDisplayMedia()}},
+        except it only captures the top-level document's viewport (current tab),
+        using a permission prompt instead of presenting the user with a picker.
+        For security reasons, it also only works from "cross-origin isolated"
+        documents that opt-in with a document-policy.
+      </p>
+      <section>
+        <h2>
+          <dfn>MediaDevices</dfn> Additions
+        </h2>
+        <pre class="idl"
+>partial interface MediaDevices {
+  Promise&lt;MediaStream&gt; getViewportMedia(optional DisplayMediaStreamConstraints constraints = {});
+};</pre>
+        <dl data-link-for="MediaDevices" data-dfn-for="MediaDevices" class="methods">
+          <dt>
+            <dfn>getViewportMedia</dfn>
+          </dt>
+          <dd>
+            <p>Prompts the user for permission to live-capture the viewport (current tab).</p>
+            <p>
+              The user agent MUST apply any provided <var>constraints</var> to the produced
+              media after permission has been granted.
+            </p>
+            <p>
+              In the case of audio, the user agent MAY present the end-user with an option to
+              include audio from the current viewport in the capture, if available. Like
+              {{MediaDevices/getDisplayMedia()}} with regards to audio+video, the user agent is
+              allowed to not return audio even if the audio constraint is present. If the user
+              agent knows no audio will be shared for the lifetime of the stream it MUST NOT
+              include an audio track in the resulting stream. The user agent MAY accept a
+              request for audio and video by only returning a video track in the resulting
+              stream, or it MAY accept the request by returning both an audio track and a video
+              track in the resulting stream. The user agent MUST reject audio-only requests.
+            </p>
+            <p>
+              Like {{MediaDevices/getDisplayMedia()}}, the {{PermissionState/"granted"}}
+              permission cannot be persisted.
+            </p>
+            <p>When the {{MediaDevices/getViewportMedia()}}
+            method is called, the user agent MUST run the following
+            steps:</p>
+            <ol>
+              <li>
+                <p>If the <a>current settings object</a>'s
+                [=environment settings object/cross-origin isolated capability=]
+                is false, return a promise <a>rejected</a>
+                with a {{DOMException}} object whose {{DOMException/name}}
+                attribute has the value {{SecurityError}}.</p>
+              </li>
+              <li>
+                If the [=relevant settings object=]'s
+                [=environment settings object/responsible document=]'s
+                [=top-level browsing context=]'s
+                <a href="https://wicg.github.io/document-policy/#required-document-policy">
+                required document policy</a> does not contain
+                `Require-Document-Policy: html-capture` (TODO: use correct algorithm),
+                return a promise <a>rejected</a>
+                with a {{DOMException}} object whose {{DOMException/name}}
+                attribute has the value {{SecurityError}}.</p>
+              </li>
+              <li>
+                <p>If the [=relevant global object=] of [=this=] does not have
+          [=transient activation=], return a promise <a>rejected</a>
+                with a {{DOMException}} object whose {{DOMException/name}}
+                attribute has the value {{InvalidStateError}}.</p>
+              </li>
+              <li>
+                <p>Let <var>constraints</var> be the method's first
+                argument.</p>
+              </li>
+              <li>
+                <p>If <code>constraints.video</code> is <code>false</code>,
+                  return a promise [=reject|rejected=] with a newly
+                  [=exception/created=] {{TypeError}}.</p>
+              </li>
+              <li>
+                <p>For each [= map/exist | existing =] member
+                in <var>constraints</var> whose value, <var>CS</var>, is
+                a dictionary, run the following steps:</p>
+                <ol>
+                  <li>
+                    <p>If <var>CS</var> contains a member named <code>advanced</code>,
+                    return a promise [=reject|rejected=] with a newly
+                    [=exception/created=] {{TypeError}}.</p>
+                  </li>
+                  <li>
+                    <p>If <var>CS</var> contains a member whose name specifies a
+                    constrainable property applicable to
+                    <a data-cite="SCREEN-CAPTURE#dfn-display-surface">display surface</a>s,
+                    and whose value in turn is a dictionary containing a member
+                    named either <code>min</code> or <code>exact</code>, return
+                    a promise [=reject|rejected=] with a newly
+                    [=exception/created=] {{TypeError}}.</p>
+                  </li>
+                  <li>
+                    <p>If <var>CS</var> contains a member whose name specifies a
+                    constrainable property applicable to
+                    <a data-cite="SCREEN-CAPTURE#dfn-display-surface">display surface</a>s,
+                    and whose value in turn is a dictionary containing a member
+                    named <code>max</code>, and that member's value in turn is
+                    less than the constrainable property's
+                    <a data-cite="SCREEN-CAPTURE#dfn-floor-value">floor value</a>,
+                    then let <var>failedConstraint</var> be the name of the
+                    member, let <var>message</var> be either
+                    <code>undefined</code> or an informative human-readable
+                    message, and return a promise [=reject|rejected=] with a new
+                    <code>OverconstrainedError</code> created by calling
+                    <code>OverconstrainedError(<var>failedConstraint</var>,
+                    <var>message</var>)</code>.
+                  </li>
+                </ol>
+              </li>
+              <li>
+                <p>Let <var>requestedMediaTypes</var> be the set of media
+                types in <var>constraints</var> with either a dictionary
+                value or a value of <code>true</code>.</p>
+              </li>
+              <li>
+                <p>If the <a>current settings object</a>'s [=environment settings object/responsible document=] is NOT [=Document/fully active=] or does NOT
+                <a data-cite="!HTML/#gains-focus">have focus</a>, return
+                  a promise [=reject|rejected=] with a
+                  {{DOMException}} object whose
+                  {{DOMException/name}} attribute has the value
+                  {{InvalidStateError}}.</p>
+              </li>
+              <li>
+                <p>Let <var>p</var> be a new promise.</p>
+              </li>
+              <li>
+                <p>Run the following steps in parallel:</p>
+                <ol>
+                  <li>
+                    <p>For each media type <var>T</var> in
+                    <var>requestedMediaTypes</var>,</p>
+                    <ol>
+                      <li>
+                        <p>If no sources of type <var>T</var> are available,
+                        <a>reject</a> <var>p</var> with a new
+                        {{DOMException}} object whose
+                        {{DOMException/name}} attribute has the value
+                        {{NotFoundError}}.</p>
+                      </li>
+                      <li>
+                        <p>Read the current [= permission state=] for obtaining
+                        sources of type <var>T</var> in the current browsing
+                        context. If the permission state is {{PermissionState/"denied"}}, jump to
+                        the step labeled <em>PermissionFailure</em> below.</p>
+                      </li>
+                    </ol>
+                  </li>
+                  <li>
+                    <p>Optionally, e.g., based on a previously-established
+                    user preference, for security reasons, or due to platform
+                    limitations, jump to the step labeled <em>Permission Failure</em> below.</p>
+                  </li>
+                  <li>
+                    <p>[=Request permission to use=]
+                    viewport capture, for a {{PermissionDescriptor}} with its
+                    {{PermissionDescriptor/name}} set to <a>"viewport-capture"</a>, resulting in
+                    a set of provided media.</p>
+                    <p>The provided media MUST include precisely one video track, which
+                    MUST be a live-capture of the
+                    <a data-cite="SCREEN-CAPTURE#dfn-browser">browser</a>
+                    <a data-cite="SCREEN-CAPTURE#dfn-display-surface">display surface</a>
+                    of the [=relevant settings object=]'s
+                    [=environment settings object/responsible document=]'s
+                    [=top-level browsing context=]'s
+                    <a data-cite="HTML#viewport">viewport</a>.</p>
+                    <p>The provided media MUST include at most one audio track, which, if
+                    provided, MUST be the combined audio produced by the sum of
+                    documents that consist of the
+                    [=relevant settings object=]'s
+                    [=environment settings object/responsible document=]'s
+                    [=top-level browsing context=]'s [=active document=], and
+                    all [=active document=]s in [=nested browsing context=]s of
+                    the [=relevant settings object=]'s
+                    [=environment settings object/responsible document=]'s
+                    [=top-level browsing context=]. This audio track
+                    MUST NOT be included if audio was not specified in
+                    <var>requestedMediaTypes</var>, or if it was specified as
+                    <code>false</code>.</p>
+                    <p>The source of a {{MediaStreamTrack}} MUST NOT change.</p>
+                    <p>If the result of the request is {{PermissionState/"granted"}}, then for
+                    each device that is sourcing the provided media, using
+                    a stable and private id for the device, <var>deviceId</var>,
+                    set [[\devicesLiveMap]]<var>[deviceId]</var> to
+                    <code>true</code>, if it isn’t already <code>true</code>,
+                    and set the
+                    [[\devicesAccessibleMap]]<var>[deviceId]</var> to
+                    <code>true</code>, if it isn’t already
+                    <code>true</code>.</p>
+                    <p>The user agent MUST NOT
+                    store a {{PermissionState/"granted"}} permission entry.
+                    </p>
+                    <p>If the result is {{PermissionState/"denied"}}, jump to the step labeled
+                    <em>Permission Failure</em> below. If the user never
+                    responds, this algorithm stalls on this step.</p>
+                    <p>If the user grants permission but a hardware error
+                    such as an OS/program/webpage lock prevents access,
+                    <a>reject</a> <var>p</var> with a new
+                    {{DOMException}} object whose
+                    {{DOMException/name}} attribute has the value
+                    {{NotReadableError}} and abort these steps.</p>
+                    <p>If the result is {{PermissionState/"granted"}} but device access fails for
+                    any reason other than those listed above, <a>reject</a>
+                    <var>p</var> with a new {{DOMException}}
+                    object whose {{DOMException/name}} attribute has the
+                    value {{AbortError}} and abort these steps.</p>
+                  </li>
+                  <li>
+                    <p>Let <var>stream</var> be the
+                    {{MediaStream}} object for which the user
+                    granted permission.</p>
+                  </li>
+                  <li>
+                    <p>Run the [=ApplyConstraints algorithm=] on all
+                    tracks in <var>stream</var> with the appropriate
+                    constraints. Should this fail, let <var>failedConstraint</var>
+                    be the result of the algorithm that failed, and let
+                    <var>message</var> be either <code>undefined</code> or an
+                    informative human-readable message, and then <a>reject</a>
+                    <var>p</var> with a new <code>OverconstrainedError</code>
+                    created by calling
+                    <code>OverconstrainedError(<var>failedConstraint</var>,
+                    <var>message</var>)</code>.</p>
+                  </li>
+                  <li>
+                    <p><a>Resolve</a> <var>p</var> with <var>stream</var> and
+                    abort these steps.</p>
+                  </li>
+                  <li>
+                    <p><em>Permission Failure</em>: [=Reject=]
+                    <var>p</var> with a new {{DOMException}}
+                    object whose {{DOMException/name}} attribute has the
+                    value {{NotAllowedError}}.</p>
+                  </li>
+                </ol>
+              </li>
+              <li>
+                <p>Return <var>p</var>.</p>
+              </li>
+            </ol>
+            <p>
+              The <a>user agent</a> MUST NOT capture content that's behind a
+              partially transparent captured
+              <a data-cite="SCREEN-CAPTURE#dfn-display-surface">display surface</a>.
+            </p>
+            <p>
+              The <a>user agent</a> MUST NOT share the audio other than audio emitted
+              from the captured tab, and MUST NOT share audio of the entire system.
+            </p>
+          </dd>
+        </dl>
+      </section>
+      <section>
+        <h2 id="constrainable-properties">
+          Constrainable Properties for Captured Viewport Surfaces
+        </h2>
+        <p>The constraints relevant to {{MediaDevices/getViewportMedia}} are only
+        those relevant to {{MediaDevices/getDisplayMedia()}}, as defined in
+        <a data-cite="SCREEN-CAPTURE#constrainable-properties">
+          5.4 Constrainable Properties for Captured Display Surfaces</a>.
+      </section>
+      <section data-cite="permissions">
+        <h1 id="permissions-intergration">Permissions Integration</h1>
+        <p>
+          <cite>Viewport Capture</cite> is a [=powerful feature=] which is identified by the
+          [=powerful feature/name=] <code><dfn class="permission">"viewport-capture"</dfn></code>,
+          requiring [=express permission=] to be used.
+        </p>
+        <p>
+          As required for integration with the [[[Permissions]]] specification, this specification defines the following:
+        </p>
+        <dl>
+          <dt>
+            [=powerful feature/permission state constraints=]
+          </dt>
+          <dd>
+            Valid values for this descriptor's <a>permission state</a> are
+            {{PermissionState/"prompt"}} and {{PermissionState/"denied"}}. The user agent MUST NOT
+            ever set this descriptor's <a>permission state</a> to {{PermissionState/"granted"}}.
+          </dd>
+        </dl>
+      </section>
+      <section>
+        <h1 id=feature-policy-integration>Permissions Policy Integration</h1>
+        <p>This specification defines a [=policy-controlled feature=]
+        identified by the string <a>"viewport-capture"</a>.
+        Its [=default allowlist=] is <code>"self"</code>.
+        <div class="note">
+          <p>A [=document=]'s
+          [=Document/permissions policy=]
+          determines whether any content in that document is allowed to use
+          {{MediaDevices/getViewportMedia}}. If disabled in any document, no content in
+          the document will be
+          [=allowed to use=]
+          {{MediaDevices/getViewportMedia}}. This is enforced by the
+          [=request permission to use=] algorithm.
+          </p>
+        </div>
+      </section>
+    </section>
+    <section>
+      <h1>Privacy Indicator Requirements</h1>
+      <p>This specification extends the <a data-cite="SCREEN-CAPTURE#privacy-indicator-requirements">
+        Privacy Indicator Requirements</a> of
+      {{MediaDevices/getDisplayMedia()}} to include {{MediaDevices/getViewportMedia}}.</p>
+    </section>
+    <section>
+      <h2>
+        Security and Privacy Considerations
+      </h2>
+      <p>
+        This section is informative; however, it notes some serious risks to platform security if
+        the advice it contains are not adhered to.
+      </p>
+      <p>
+        TBD.
       </p>
     </section>
   </body>

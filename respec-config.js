@@ -1,5 +1,6 @@
 var respecConfig = {
-  specStatus:           "ED", // "base",
+  specStatus:           "UD", // "ED" after adoption,
+  latestVersion: "https://w3c.github.io/mediacapture-viewport/", // remove then
   shortName:            "viewport-capture",
   copyrightStart: "2021",
   edDraftURI:           "https://w3c.github.io/mediacapture-viewport/",
@@ -9,7 +10,7 @@ var respecConfig = {
   ],
 
   group: "webrtc",
-  xref: ["html", "infra", "permissions", "permissions-policy", "dom"],
+  xref: ["html", "infra", "permissions", "permissions-policy", "dom", "mediacapture-streams", "screen-capture", "document-policy"],
   wgPublicList: "public-webrtc",
   github: "https://github.com/w3c/mediacapture-viewport/",
 
