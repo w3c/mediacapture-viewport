@@ -1,5 +1,6 @@
 var respecConfig = {
-  specStatus:           "ED", // "base",
+  specStatus:           "UD", // "ED" after adoption,
+  latestVersion: "https://w3c.github.io/mediacapture-viewport/", // remove then
   shortName:            "viewport-capture",
   copyrightStart: "2021",
   edDraftURI:           "https://w3c.github.io/mediacapture-viewport/",
