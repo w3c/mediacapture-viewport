@@ -156,7 +156,8 @@
                 [=top-level browsing context=]'s
                 <a href="https://wicg.github.io/document-policy/#required-document-policy">
                 required document policy</a> does not contain
-                `Require-Document-Policy: html-capture` (TODO: use correct algorithm),
+                `Require-Document-Policy: viewport-capture` and
+                `Document-Policy: viewport-capture` (TODO: use correct algorithm),
                 return a promise <a>rejected</a>
                 with a {{DOMException}} object whose {{DOMException/name}}
                 attribute has the value {{SecurityError}}.</p>
