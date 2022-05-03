@@ -152,8 +152,7 @@
                 attribute has the value {{SecurityError}}.</p>
               </li>
               <li>
-                If the [=relevant settings object=]'s
-                [=environment settings object/responsible document=]'s
+                If the [=relevant global object=]'s [=associated `Document`=]'s
                 [=top-level browsing context=]'s
                 <a href="https://wicg.github.io/document-policy/#required-document-policy">
                 required document policy</a> does not contain
@@ -221,7 +220,8 @@
                 value or a value of <code>true</code>.</p>
               </li>
               <li>
-                <p>If the <a>current settings object</a>'s [=environment settings object/responsible document=] is NOT [=Document/fully active=] or does NOT
+                <p>If the [=relevant global object=]'s [=associated `Document`=]
+                is NOT [=Document/fully active=] or does NOT
                 <a data-cite="!HTML/#gains-focus">have focus</a>, return
                   a promise [=reject|rejected=] with a
                   {{DOMException}} object whose
@@ -267,19 +267,16 @@
                     MUST be a live-capture of the
                     <a data-cite="SCREEN-CAPTURE#dfn-browser">browser</a>
                     <a data-cite="SCREEN-CAPTURE#dfn-display-surface">display surface</a>
-                    of the [=relevant settings object=]'s
-                    [=environment settings object/responsible document=]'s
+                    of the [=relevant global object=]'s [=associated `Document`=]'s
                     [=top-level browsing context=]'s
                     <a data-cite="HTML#viewport">viewport</a>.</p>
                     <p>The provided media MUST include at most one audio track, which, if
                     provided, MUST be the combined audio produced by the sum of
                     documents that consist of the
-                    [=relevant settings object=]'s
-                    [=environment settings object/responsible document=]'s
+                    [=relevant global object=]'s [=associated `Document`=]'s
                     [=top-level browsing context=]'s [=active document=], and
                     all [=active document=]s in [=nested browsing context=]s of
-                    the [=relevant settings object=]'s
-                    [=environment settings object/responsible document=]'s
+                    the [=relevant global object=]'s [=associated `Document`=]'s
                     [=top-level browsing context=]. This audio track
                     MUST NOT be included if audio was not specified in
                     <var>requestedMediaTypes</var>, or if it was specified as
