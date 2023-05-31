@@ -6,6 +6,7 @@ var respecConfig = {
   editors:  [
     { name: "Elad Alon", company: "Google", w3cid: 118124 },
     { name: "Jan-Ivar Bruaroey", company: "Mozilla", w3cid: 79152}
+    { name: "Tove Petersson", company: "Google", w3cid: 134207}
   ],
 
   group: "webrtc",
