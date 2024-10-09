@@ -322,6 +322,12 @@
                     <var>message</var>)</code>.</p>
                   </li>
                   <li>
+                    Let <var>videoTrack</var> be the video track in <var>stream</var>.
+                  </li>
+                  <li>
+                    Set <var>videoTrack</var>.{{MediaStreamTrack/[[Restrictable]]}} to <code>true</code>.
+                  </li>
+                  <li>
                     <p><a>Resolve</a> <var>p</var> with <var>stream</var> and
                     abort these steps.</p>
                   </li>
