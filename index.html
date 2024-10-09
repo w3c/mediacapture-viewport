@@ -87,7 +87,7 @@ try {
         <pre class="idl">
 partial interface MediaDevices {
   Promise&lt;MediaStream&gt; getViewportMedia(
-      optional DisplayMediaStreamOptions options = {});
+      optional ViewportMediaStreamOptions options = {});
 };</pre
         >
         <dl data-link-for="MediaDevices" data-dfn-for="MediaDevices" class="methods">
@@ -315,6 +315,67 @@ partial interface MediaDevices {
             </p>
           </dd>
         </dl>
+      </section>
+      <section>
+        <h2>ViewportMediaStreamOptions</h2>
+        <p>
+          The <dfn>ViewportMediaStreamOptions</dfn> dictionary is used to instruct the user agent what sort of
+          {{MediaStreamTrack}}s may be included in the {{MediaStream}} returned by {{MediaDevices/getViewportMedia}}.
+        </p>
+        <div>
+          <pre class="idl">
+            dictionary ViewportMediaStreamOptions {
+            (boolean or MediaTrackConstraints) video = true;
+            (boolean or MediaTrackConstraints) audio = false;
+            CaptureController controller;
+            };
+          </pre>
+          <section>
+            <h2>Dictionary <a class="idlType">ViewportMediaStreamOptions</a> Members</h2>
+            <dl
+              data-link-for="ViewportMediaStreamOptions"
+              data-dfn-for="ViewportMediaStreamOptions"
+              class="dictionary-members"
+            >
+              <dt>
+                <dfn><code>video</code></dfn> of type <code>(boolean or {{MediaTrackConstraints}})</code>, defaulting to
+                <code>true</code>
+              </dt>
+              <dd>
+                <p>
+                  If <code>true</code>, it requests that the returned {{MediaStream}} contain a video track. If a
+                  <code>Constraints</code> structure is provided, it further specifies desired processing options to be
+                  applied to the video track rendition of the display surface chosen by the user. If <code>false</code>,
+                  the request will be [=rejected=] with a {{TypeError}}, as per the getViewportMedia algorithm.
+                </p>
+              </dd>
+              <dt>
+                <dfn><code>audio</code></dfn> of type <code>(boolean or {{MediaTrackConstraints}})</code>, defaulting to
+                <code>false</code>
+              </dt>
+              <dd>
+                <p>
+                  If <code>true</code>, it signals an interest that the returned {{MediaStream}} contain an audio track,
+                  if supported and audio is available for display surface chosen by the user. If a
+                  <code>Constraints</code> structure is provided, it further specifies desired processing options to be
+                  applied to the audio track. If <code>false</code>, the {{MediaStream}} will not contain an audio
+                  track.
+                </p>
+              </dd>
+              <dt>
+                <dfn><code>controller</code></dfn> of type <code>{{CaptureController}}</code>
+              </dt>
+              <dd>
+                <p>
+                  If present, this {{CaptureController}} object will be associated with the
+                  <a data-cite="SCREEN-CAPTURE#dfn-capture-session">capture-session</a>. Through the methods exposed on
+                  this object, the <a data-cite="SCREEN-CAPTURE#dfn-capture-session">capture-session</a> can be
+                  manipulated.
+                </p>
+              </dd>
+            </dl>
+          </section>
+        </div>
       </section>
       <section>
         <h2 id="constrainable-properties">Constrainable Properties for Captured Viewport Surfaces</h2>
