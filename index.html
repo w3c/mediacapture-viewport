@@ -210,7 +210,8 @@ partial interface MediaDevices {
                       <li>
                         <p>
                           If no sources of type <var>T</var> are available, <a>reject</a> <var>p</var> with a new
-                          {{DOMException}} object whose {{DOMException/name}} attribute has the value {{NotFoundError}}.
+                          {{DOMException}} object whose {{DOMException/name}} attribute has the value {{NotFoundError}} and abort
+                          these steps.
                         </p>
                       </li>
                       <li>
@@ -285,7 +286,7 @@ partial interface MediaDevices {
                       <var>message</var> be either <code>undefined</code> or an informative human-readable message, and
                       then <a>reject</a> <var>p</var> with a new <code>OverconstrainedError</code>
                       created by calling
-                      <code>OverconstrainedError(<var>failedConstraint</var>, <var>message</var>)</code>.
+                      <code>OverconstrainedError(<var>failedConstraint</var>, <var>message</var>)</code>, and abort these steps.
                     </p>
                   </li>
                   <li>Let <var>videoTrack</var> be the video track in <var>stream</var>.</li>
